@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Teste</title>
+    <meta charset="utf-8">
+    <style>
+      html,body { height:100%; margin:0; padding:0; }
+      #app-01 { font-size:20px; }
+      .app01 { font-weight:bold; }
+    </style>
+    <!-- script src="https://unpkg.com/vue"></script //-->
+    <script src="js/vue2.min.js"></script>
+  </head>
+  <body>
+    <div id="app-01" class="app01">{{message}}</div>
+    <div id="app-02"> <span v-bind:title="message">
+        Hover your mouse over me for a few seconds to see my dynamically bound title!
+    </span> </div>
+    <div id="app-03"> <p v-if="seen">Now you see me</p> </div>
+    <div id="app-04"> <ol>
+      <li v-for="todo in todos">{{todo.text}}</li>
+    </ol> </div>
+    <div id="app-05"> <p>{{message}}</p> <button v-on:click="reverseMessage">Reverse Message</button> </div>
+    <div id="app-06"> <p>{{message}}</p> <input v-model="message"> </div>
+    <div id="app-07"> <ol>
+      <todo-item v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id"></todo-item>
+    </ol> </div>
+    <div id='app-10' v-bind='atributo'>Sem Cor</div>
+    
+    <script>
+      function myMixin() {
+        var myMixin = {
+          created:function() { this.hello(); },
+          methods:{
+            hello:function() { console.log('Ola Mixin!!!'); }
+          }
+        };
+        var Component = Vue.extend({
+          mixins:[myMixin]
+        });
+        new Component(); // => "Ola Mixin!!!"
+
+        // Extends...
+        var CompA = new Vue({
+          created:function() { this.hello(); },
+          methods:{
+            hello:function() { console.log('Me chamo A...'); }
+          }
+        });
+        var CompB = new Vue({
+          extends:CompA,
+          created:function() { this.hi(); },
+          methods:{
+            hi:function() { console.log("Ola sou o B"); }
+          }
+        });
+
+        new CompB({ });
+      }
+
+      function initDOM() {
+        var result = {};
+
+        result['app01'] = new Vue({el:'#app-01', data:{message:'Hello Vue!'}});
+        result['app02'] = new Vue({el:'#app-02', data:{message:'You loaded this page on '+ new Date()}});
+        result['app03'] = new Vue({el:'#app-03', data:{seen:true}});
+        result['app04'] = new Vue({el:'#app-04', data:{todos:[
+          {text:'Learn JavaScript'},{text:'Learn Vue'},{text:'Build something awesome'}]}});
+
+        result['app05'] = new Vue({el:'#app-05',data:{message:'Hello Vue.js!'},
+          methods:{reverseMessage:function() {
+            this.message = this.message.split('').reverse().join('');
+          }
+        }});
+
+        result['app06'] = new Vue({el:'#app-06', data:{message:'Hello Vue!'}});
+
+        Vue.component('todo-item',{props:['todo'], template:'<li>{{todo.text}}</li>'});
+        result['app07'] = new Vue({el:'#app-07', data:{groceryList:[
+          {id:7, text:'Vegetables'},{id:8, text:'Cheese'},{id:9, text:'Whatever else humans are supposed to eat'}]}});
+
+        result['app10'] = new Vue({el:'#app-10', data:{atributo:{style:'color:red;'}}});
+
+        myMixin();
+
+        return result;
+      }
+      
+      var teste = initDOM();
+
+      teste.app04.todos.push({text:'Novo Item'});
+    </script>
+  </body>
+</html>
