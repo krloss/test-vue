@@ -26,8 +26,37 @@
       <todo-item v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id"></todo-item>
     </ol> </div>
     <div id='app-10' v-bind='atributo'>Sem Cor</div>
+    <div id='app-11' v-bind='atributo'>Plugin</div>
     
     <script>
+      function myPlugin() {
+        var MyPlugin = { };
+
+        MyPlugin.install = function(Vue,options) {
+          return (Vue.myGlobalMethod = function() { console.log("01: MyPlugin.install"); })
+        }
+
+        Vue.directive('my-directive',{
+          myPlugin:MyPlugin, logPlugin:function() { console.log("02: Vue.directive"); }
+        });
+
+        Vue.mixin({
+          created:function() { console.log("03: Vue.mixin"); }
+        });
+
+        Vue.prototype.$myMethod = function(text) {
+          console.log("04: Vue.prototype.$myMethod :: "+ text);
+        }
+        var OutroPlugin = { execute:function() { console.log("05: OutroPlugin"); } };
+
+        Vue.use(OutroPlugin);
+        Vue.use(OutroPlugin,{opcao:true});
+
+        console.log("06: "+ JSON.stringify(Vue.myGlobalMethod));
+        new Vue({el:'#app-11', data:{message:'Mixin!'}});//, check:$myMethod()}});
+        console.log("07: "+ JSON.stringify(Vue.prototype));
+        console.log("08: "+ JSON.stringify(Vue));
+      }
       function myMixin() {
         var myMixin = {
           created:function() { this.hello(); },
@@ -81,7 +110,8 @@
 
         result['app10'] = new Vue({el:'#app-10', data:{atributo:{style:'color:red;'}}});
 
-        myMixin();
+        // myMixin();
+        myPlugin();
 
         return result;
       }
@@ -90,5 +120,9 @@
 
       teste.app04.todos.push({text:'Novo Item'});
     </script>
+
+    <my-directive />
+    <my-directive />
+    <my-directive />
   </body>
 </html>
