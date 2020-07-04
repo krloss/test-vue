@@ -1,128 +1,238 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Teste</title>
-    <meta charset="utf-8">
-    <style>
-      html,body { height:100%; margin:0; padding:0; }
-      #app-01 { font-size:20px; }
-      .app01 { font-weight:bold; }
-    </style>
-    <!-- script src="https://unpkg.com/vue"></script //-->
+<head>
+    <title>Vue.js Get Started</title>
     <script src="js/vue2.min.js"></script>
-  </head>
-  <body>
-    <div id="app-01" class="app01">{{message}}</div>
-    <div id="app-02"> <span v-bind:title="message">
+    <script src="js/vue-router3.min.js"></script>
+    <script src="js/vuex3.min.js"></script>
+    <style>
+        .titleP {
+            font-size: large;
+            font-weight: bold;
+            color: darkblue;
+        }
+
+        .contentP {
+            font-size: medium;
+            color: darkgreen;
+        }
+    </style>
+    <script type="text/x-template" id="my-template">
+        <span>
+            <p class="titleP">Título</p>
+            <p class="contentP">Conteúdo</p>
+        </span>
+    </script>
+</head>
+<body>
+    <div id="app01">{{message}}</div>
+    <div id="app02"><span v-bind:title="message">
         Hover your mouse over me for a few seconds to see my dynamically bound title!
-    </span> </div>
-    <div id="app-03"> <p v-if="seen">Now you see me</p> </div>
-    <div id="app-04"> <ol>
-      <li v-for="todo in todos">{{todo.text}}</li>
-    </ol> </div>
-    <div id="app-05"> <p>{{message}}</p> <button v-on:click="reverseMessage">Reverse Message</button> </div>
-    <div id="app-06"> <p>{{message}}</p> <input v-model="message"> </div>
-    <div id="app-07"> <ol>
-      <todo-item v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id"></todo-item>
-    </ol> </div>
-    <div id='app-10' v-bind='atributo'>Sem Cor</div>
-    <div id='app-11' v-bind='atributo'>Plugin</div>
-    
+    </span></div>
+    <div id="app03"><span v-if="seen">Now you see me</span></div>
+    <div id="app04"><ol><li v-for="todo in todos">
+        {{todo.text}}
+    </li></ol></div>
+    <div id="app05"><p>{{message}}</p>
+        <button v-on:click="reverseMessage">Reverse Message</button>
+    </div>
+    <div id="app06"><p>{{message}}</p>
+        <input v-model="message">
+    </div>
+
+    <div id="app07"><ol>
+        <todo-item v-for="it in groceryList" v-bind:todo="it" v-bind:key="it.id"></todo-item>
+    </ol></div>
+
+    <div id="app11"><span @[event]="action" :[key]="text">{{text}}</span></div>
+    <div id="app12"><ol>
+        <my-item v-for="it in list" :item="it" :key="it.id"></my-item>
+    </ol></div>
+    <div id="app13"><my-item text="Teste">
+        <span style="color:darkblue;">Azul</span>
+        <template v-slot:p="parent"><span style="color:darkblue;">Pequeno: {{parent.item}}</span></template>
+        <template #m><span style="color:darkorange;">Medio</span></template>
+        <template v-slot:g><span style="color:darkgreen;">Grande</span></template>
+        <span style="color:darkgreen;">Verde</span>
+    </my-item></div>
+    <div id="app14"><async-item /></div>
+    <div id="app15"><my-test id='directiveTest' v-my-plugin-directive:x.y="'z'" /></div>
+    <div id="app16"><span :title="x | toUC">Filter: {{y | toUC}}</span></div>
+
+    <div id="app21">
+        <hr style="border:solid 3px" /><p>
+            <router-link to="/home">Go to Home</router-link>
+            <router-link to="/about">Go to About</router-link>
+            <router-link :to="{name:'NamedRoute', params:{post_id:22}, query:{filter:true}}">Go to Dynamic</router-link>
+            <router-link to="/nested/home">Go to Nested Home</router-link>
+            <router-link to="/nested/about">Go to Nested About</router-link>
+            <router-link to="/named-views/25">Go to Named Views</router-link>
+            <router-link to="/redirect">Go to Redirect</router-link>
+        </p><hr style="border:solid 3px" />
+        <router-view></router-view>
+        <hr style="border:dashed 1px" />
+        <router-view name="rv23_a"></router-view>
+        <hr style="border:dotted 1px" />
+        <router-view name="rv23_b"></router-view>
+    </div>
+
+    <div id="app31"><p>{{doubleState}}</p>
+        <input v-model="item">
+        <button @click="addItem">Add Item</button>
+        <button @click="addDouble">Double State</button>
+        <p>> {{doubleA}}</p>
+    </div>
+    <div id="app32"><p>{{state}}</p>
+        <input v-model="item">
+        <button @click="addItem">Add Item</button>
+        <button @click="addDouble">Double State</button>
+        <p>> {{doubleB}}</p>
+    </div>
+
     <script>
-      function myPlugin() {
-        var MyPlugin = { };
-
-        MyPlugin.install = function(Vue,options) {
-          return (Vue.myGlobalMethod = function() { console.log("01: MyPlugin.install"); })
+        function str(it) { return JSON.stringify(it); }
+        function getKeys(it) { return Object.keys(it); }
+        function directiveHookFunctions(method,el,binding,vnode,oldVnode) {
+            console.log(`>>> [my-plugin-directive.${method}]: ${el.id} | ${getKeys(binding)} | ${getKeys(vnode)} | ${oldVnode}`);
         }
 
-        Vue.directive('my-directive',{
-          myPlugin:MyPlugin, logPlugin:function() { console.log("02: Vue.directive"); }
-        });
+        const MyPlugin = {
+            install:function(vue,options) {
+                console.log(`>>> [MyPlugin.install]: ${getKeys(vue)} | ${str(options)}`);
 
-        Vue.mixin({
-          created:function() { console.log("03: Vue.mixin"); }
-        });
-
-        Vue.prototype.$myMethod = function(text) {
-          console.log("04: Vue.prototype.$myMethod :: "+ text);
+                vue.myPluginGlobalMethods = ((it) => console.log(`>>> [MyPlugin.globalMethods]: ${it}`));
+                vue.directive('my-plugin-directive', {
+                    bind(el,binding,vnode,oldVnode) {
+                        directiveHookFunctions('bind',el,binding,vnode,oldVnode)
+                    },
+                    inserted(el,binding,vnode,oldVnode) {
+                        directiveHookFunctions('inserted',el,binding,vnode,oldVnode)
+                    },
+                    update(el,binding,vnode,oldVnode) {
+                        directiveHookFunctions('update',el,binding,vnode,oldVnode)
+                    },
+                    componentUpdated(el,binding,vnode,oldVnode) {
+                        directiveHookFunctions('componentUpdated',el,binding,vnode,oldVnode)
+                    },
+                    unbind(el,binding,vnode,oldVnode) {
+                        directiveHookFunctions('unbind',el,binding,vnode,oldVnode)
+                    }
+                });
+                vue.mixin({
+                    created() { this.myPluginMixinMethod(this.$data); },
+                    data:() => ({myPluginMixinProp:true}),
+                    methods:{
+                        myPluginMixinMethod(it) { console.log(`>>> [my-plugin-mixin]: ${getKeys(it)}`); }
+                    }
+                });
+                vue.prototype.$myPluginInstanceMethod = ((it) => console.log(`>>> [MyPluginInstanceMethod]: ${it} | ${str(this)}`));
+            }
         }
-        var OutroPlugin = { execute:function() { console.log("05: OutroPlugin"); } };
 
-        Vue.use(OutroPlugin);
-        Vue.use(OutroPlugin,{opcao:true});
+        Vue.use(MyPlugin,{env:'OK'});
 
-        console.log("06: "+ JSON.stringify(Vue.myGlobalMethod));
-        new Vue({el:'#app-11', data:{message:'Mixin!'}});//, check:$myMethod()}});
-        console.log("07: "+ JSON.stringify(Vue.prototype));
-        console.log("08: "+ JSON.stringify(Vue));
-      }
-      function myMixin() {
-        var myMixin = {
-          created:function() { this.hello(); },
-          methods:{
-            hello:function() { console.log('Ola Mixin!!!'); }
-          }
-        };
-        var Component = Vue.extend({
-          mixins:[myMixin]
+        var app01 = new Vue({el:'#app01',data:{message:'Ola Vue!'}});
+        var app02 = new Vue({el:'#app02',
+            data:{message:'Pagina carregada em: '+ new Date().toLocaleString()}});
+        var app03 = new Vue({el:'#app03',data:{seen:false}});
+        var app04 = new Vue({el:'#app04',data:{todos:[
+            {text:'Learn JavaScript'},{text:'Learn Vue'},{text:'Build something awesome'}
+        ]}});
+        var app05 = new Vue({el:'#app05',data:{message:'Ola Vue.js!'},methods:{
+            reverseMessage:function() {
+                this.message = this.message.split('').reverse().join('');
+            }
+        }});
+        var app06 = new Vue({el:'#app06',data:{message:'Hello Vue!'},
+            watch:{message:(novo,antigo) => console.log(`>>> ${antigo} -> ${novo}.`)}});
+
+        Vue.component('todo-item',{props:['todo'],template:'<li>{{todo.text}}</li>'});
+        var app07 = new Vue({el:'#app07',data:{groceryList:[
+            {id:0, text:'Vegetais'},{id:1, text:'Queijo'},{id:2, text:'Comida'}
+        ]}});
+
+        var app11 = new Vue({el:'#app11',data:{event:'click', key:'title',value:'OK'},
+            computed:{text:function(){return `>>> ${this.event} -> ${this.key}:${this.value}.`}},
+            methods:{action:function(){console.log(this.text)}}});
+        var app12 = new Vue({el:'#app12',
+            components:{MyItem:{props:['item'],template:'<li>{{item.text}}</li>'}},
+            data:{list:[{id:0, text:'Dez'},{id:1, text:'Vinte'},{id:2, text:'Trinta'}]}
         });
-        new Component(); // => "Ola Mixin!!!"
-
-        // Extends...
-        var CompA = new Vue({
-          created:function() { this.hello(); },
-          methods:{
-            hello:function() { console.log('Me chamo A...'); }
-          }
+        var app13 = new Vue({el:'#app13', components:{MyItem:{props:['text'],
+            template:'<pre><slot>Fallback</slot><h6><slot name="p" :item="text" /></h6><h4><slot name="m" /></h4><h2><slot name="g"/></h2></pre>'}}
         });
-        var CompB = new Vue({
-          extends:CompA,
-          created:function() { this.hi(); },
-          methods:{
-            hi:function() { console.log("Ola sou o B"); }
-          }
-        });
-
-        new CompB({ });
-      }
-
-      function initDOM() {
-        var result = {};
-
-        result['app01'] = new Vue({el:'#app-01', data:{message:'Hello Vue!'}});
-        result['app02'] = new Vue({el:'#app-02', data:{message:'You loaded this page on '+ new Date()}});
-        result['app03'] = new Vue({el:'#app-03', data:{seen:true}});
-        result['app04'] = new Vue({el:'#app-04', data:{todos:[
-          {text:'Learn JavaScript'},{text:'Learn Vue'},{text:'Build something awesome'}]}});
-
-        result['app05'] = new Vue({el:'#app-05',data:{message:'Hello Vue.js!'},
-          methods:{reverseMessage:function() {
-            this.message = this.message.split('').reverse().join('');
-          }
+        var app14 = new Vue({el:'#app14', components:{
+            AsyncItem:function(resolve,reject) {
+                setTimeout(() => resolve({template:'<h2>Async Component</h2>'}),3000);
+            }
+        }});
+        var app15 = new Vue({el:'#app15', components:{MyTest:{template:'#my-template'}}});
+        var app16 = new Vue({el:'#app16', data:{x:'bind',y:'value'}, filters:{
+            toUC:(it) => (it ? it.toUpperCase() : '...')
         }});
 
-        result['app06'] = new Vue({el:'#app-06', data:{message:'Hello Vue!'}});
+        const Home = {template:'<h2>Home</h2>'};
+        const About= {template:'<h4>About</h4>'};
+        const Dynamic = { props:['filters'],
+            template:'<h2>Dynamic: {{$route.params}} | {{filters}}: {{$route.query}}</h2>'};
+        const Nested = {template:'<div class="nested"><h1>Nested</h1><hr /><router-view /></div>'};
+        const NamedViews = {props:['named_id'], template:'<h1>Named Views: {{named_id}}</h1>'};
+        const routes = [
+            {path:'/home', component:Home},
+            {path:'/about', component:About},
+            {path:'/dynamic/:post_id/resources', name:'NamedRoute',
+                component:Dynamic, props:(route) => ({filters:route.query})},
+            {path:'/nested', component:Nested, children:[
+                {path:'home', component:Home},
+                {path:'about', component:About}
+            ]},
+            {path:'/named-views/:named_id', props:{default:true},
+                components:{default:NamedViews, rv23_a:Home, rv23_b:About}},
+            {path:'/redirect', redirect:'/about'}
+        ];
+        const router = new VueRouter({routes});
+        const app21 = new Vue({router}).$mount('#app21');
 
-        Vue.component('todo-item',{props:['todo'], template:'<li>{{todo.text}}</li>'});
-        result['app07'] = new Vue({el:'#app-07', data:{groceryList:[
-          {id:7, text:'Vegetables'},{id:8, text:'Cheese'},{id:9, text:'Whatever else humans are supposed to eat'}]}});
+        //Vue.use(Vuex);
+        const {mapActions,mapGetters,mapMutations,mapState} = Vuex
+        const store = new Vuex.Store({
+            state:{count:10},
+            getters:{doubleCount:i => (2 * i.count)},
+            mutations:{sum:(i,param) => (i.count += parseInt(param))},
+            actions:{
+                add:(context,param) => context.commit('sum',param),
+                addDouble:(context) => context.dispatch('add',context.state.count)
+            },
+            modules:{
+                modA:{state:() => ({countA:10}), getters:{doubleA:i => (2 * i.countA)}},
+                modB:{namespaced:true, state:() => ({countB:30}), getters:{doubleB:i => (2 * i.countB)}}
+            }
+        });
 
-        result['app10'] = new Vue({el:'#app-10', data:{atributo:{style:'color:red;'}}});
-
-        // myMixin();
-        myPlugin();
-
-        return result;
-      }
-      
-      var teste = initDOM();
-
-      teste.app04.todos.push({text:'Novo Item'});
+        const app31 = new Vue({store,data:{item:2},
+            computed: {
+                state() { return this.$store.state.count },
+                doubleState() { return this.$store.getters.doubleCount },
+                doubleA() { return this.$store.getters.doubleA }
+            },
+            methods: {
+                addItem() { this.$store.commit('sum',this.item) },
+                addDouble() { this.$store.dispatch('addDouble') }
+            }
+        }).$mount('#app31');
+        const app32 = new Vue({store, el:'#app32',data:{item:3},
+            computed: {
+                ...mapState({state:'count'}),
+                ...mapState({a:i => i.modA.countA}),
+                ...mapGetters({b:'modB/doubleB'}),
+                ...mapGetters('modB',['doubleB'])
+            },
+            methods: {
+                ...mapMutations(['sum']),
+                addItem() { this.sum(this.item) },
+                ...mapActions(['addDouble'])
+            }
+        });
     </script>
-
-    <my-directive />
-    <my-directive />
-    <my-directive />
-  </body>
+</body>
 </html>
