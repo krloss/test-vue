@@ -88,7 +88,7 @@
         <button @click="addDouble">Double State</button>
         <p>> {{doubleB}}</p>
     </div>
-
+    
     <script>
         function str(it) { return JSON.stringify(it); }
         function getKeys(it) { return Object.keys(it); }
@@ -210,6 +210,11 @@
         });
 
         const app31 = new Vue({store,data:{item:2},
+            created() {
+                this.$store.subscribe((mutation,state) => {
+                    console.log(mutation.type,mutation.payload,state);
+                });
+            },
             computed: {
                 state() { return this.$store.state.count },
                 doubleState() { return this.$store.getters.doubleCount },
@@ -221,6 +226,11 @@
             }
         }).$mount('#app31');
         const app32 = new Vue({store, el:'#app32',data:{item:3},
+            created() {
+                this.$store.subscribeAction((action,state) => {
+                    console.log(action.type,action.payload,state);
+                });
+            },
             computed: {
                 ...mapState({state:'count'}),
                 ...mapState({a:i => i.modA.countA}),
